@@ -1,9 +1,11 @@
 #views.py
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
 from .serializers import UserSerializer
 from django.contrib.auth.models import User
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from rest_framework import status
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .serializers import CustomTokenObtainPairSerializer, UserSerializer
 
 @api_view(['POST'])
 def register(request):
@@ -14,6 +16,9 @@ def register(request):
         user.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 @api_view(['POST'])
 def login(request):
@@ -28,3 +33,4 @@ def login(request):
         return Response({"error": "Credenciales inválidas"}, status=status.HTTP_400_BAD_REQUEST)
 
     return Response({"message": "Inicio de sesión exitoso"}, status=status.HTTP_200_OK)
+

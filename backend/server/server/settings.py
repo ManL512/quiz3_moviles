@@ -29,13 +29,14 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
+    'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-    'SIMPLE_JWT': {
-        'ACCESS_TOKEN_LIFETIME': timedelta(minutes=2),  # Duración del token de sesión (2 minutos)
-        'REFRESH_TOKEN_LIFETIME': timedelta(days=1),  # Duración del token de larga duración (1 día)
-    },
+        # Otros métodos de autenticación, si los hay
+    ],
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
 }
 
 
