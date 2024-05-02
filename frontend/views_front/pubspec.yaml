@@ -30,7 +30,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
   cupertino_icons: ^1.0.6
   http: ^1.2.1
   flutter_form_builder: ^9.2.1
