@@ -28,12 +28,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-        # Otros métodos de autenticación, si los hay
-    ],
+REST_FRAME_SIMPLEJWT = {
+  'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),  # Set short-lived token lifetime
+
 }
+
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),

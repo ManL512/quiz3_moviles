@@ -5,5 +5,6 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('register/', views.register),
-    path('login/', views.CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('login/', views.login, name='login'),
+    path('activate_long_token/', views.activate_long_token, name='activate_long_token'),
 ]
