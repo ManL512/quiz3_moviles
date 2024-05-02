@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:views_front/constants/boton.dart'; // Importa los estilos de botón
+import 'package:http/http.dart' as http;
+import 'login_screen.dart'; // Importa LoginScreen
 
 class HomeScreen extends StatelessWidget {
   final String accessToken;
@@ -8,8 +10,6 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String username = _extractUsername(accessToken);
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Home Screen'),
@@ -19,35 +19,28 @@ class HomeScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              '¡Bienvenido, $username!',
+              '¡Bienvenido!',
               style: TextStyle(fontSize: 24),
             ),
             SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () {
-                _showTokenDialog(context, accessToken);
+                // Implementa aquí la lógica para habilitar el login alternativo
+                _showActivationDialog(context);
               },
-              icon: Icon(Icons.access_time_rounded), // Icono para "Ver Token"
-              label: Text('Ver Token'),
-              style: ButtonStyles.getButtonStyle(), // Aplicar estilos de botón
+              icon: Icon(Icons.fingerprint),
+              label: Text('Habilitar Login Alternativo'),
             ),
             SizedBox(height: 20),
-            ElevatedButton.icon(
+            ElevatedButton(
               onPressed: () {
-                // Lógica para habilitar algo en la aplicación
+                // Redirige al usuario a la pantalla de inicio de sesión
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginScreen()),
+                );
               },
-              icon: Icon(Icons.fingerprint), // Icono de huella para "Habilitar"
-              label: SizedBox(
-                width: 160,
-                height: 50,
-                child: Center(
-                  child: Text(
-                    'Habilitar',
-                    style: TextStyle(fontSize: 18),
-                  ),
-                ),
-              ),
-              style: ButtonStyles.getButtonStyle(), // Aplicar estilos de botón
+              child: Text('Cerrar Sesión'),
             ),
           ],
         ),
@@ -55,27 +48,84 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  String _extractUsername(String accessToken) {
-    return 'Usuario';
-  }
+  void _showActivationDialog(BuildContext context) {
+    TextEditingController usernameController = TextEditingController();
+    TextEditingController passwordController = TextEditingController();
 
-  void _showTokenDialog(BuildContext context, String accessToken) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Token de Acceso'),
-          content: Text(accessToken),
+          title: Text('Activar Login Alternativo'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: usernameController,
+                decoration: InputDecoration(labelText: 'Nombre de Usuario'),
+              ),
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: InputDecoration(labelText: 'Contraseña'),
+              ),
+            ],
+          ),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cerrar'),
+              child: Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _activateLongToken(context, usernameController.text, passwordController.text);
+              },
+              child: Text('Aceptar'),
             ),
           ],
         );
       },
     );
+  }
+
+  Future<void> _activateLongToken(BuildContext context, String username, String password) async {
+    final url = Uri.parse('http://127.0.0.1:8000/activate_long_token/');
+    final response = await http.post(
+      url,
+      body: jsonEncode({
+        'username': username,
+        'password': password,
+      }),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      final String longToken = data['long_token'];
+
+      // Mostrar un mensaje de éxito
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Token de larga duración activado correctamente'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Redirige al usuario a la pantalla de inicio de sesión
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen(isLongTokenActivated: true)),
+      );
+    } else {
+      // Mostrar un mensaje de error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al activar el token de larga duración'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

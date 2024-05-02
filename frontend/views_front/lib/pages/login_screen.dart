@@ -4,6 +4,10 @@ import 'package:http/http.dart' as http;
 import 'package:views_front/pages/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
+  final bool isLongTokenActivated; // Agrega el parámetro isLongTokenActivated
+
+  const LoginScreen({Key? key, this.isLongTokenActivated = false}) : super(key: key);
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -97,9 +101,42 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: _login,
                     child: Text('Iniciar Sesión'),
                   ),
+            SizedBox(height: 20.0),
+            // Mostrar el botón "Iniciar Sesión con Huella" solo si isLongTokenActivated es true
+            widget.isLongTokenActivated
+                ? ElevatedButton(
+                    onPressed: () {
+                      // Implementa aquí la lógica para iniciar sesión con huella (token de larga duración)
+                      _loginWithFingerprint();
+                    },
+                    child: Text('Iniciar Sesión con Huella'),
+                  )
+                : SizedBox(), // Si no se activa el token de larga duración, no mostrar este botón
           ],
         ),
       ),
+    );
+  }
+
+  void _loginWithFingerprint() {
+    // Implementa aquí la lógica para iniciar sesión con huella (token de larga duración)
+    // Por ejemplo, puedes mostrar un diálogo para la autenticación con huella
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Autenticación con Huella'),
+          content: Text('Por favor, coloca tu dedo en el sensor de huella para iniciar sesión.'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancelar'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
