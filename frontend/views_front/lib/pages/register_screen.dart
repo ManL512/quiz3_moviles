@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'login_screen.dart'; // Importa LoginScreen
+import 'package:views_front/constants/constants.dart';
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -48,55 +49,57 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
     }
   }
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text('Registro'),
+    ),
+    body: Container(
+      color: backgroundColor, // Usar el color de fondo definido en constants.dart
+      padding: EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          TextField(
+            controller: _emailController,
+            decoration: labelStyle.copyWith(labelText: 'Correo electrónico'), // Usar el estilo definido para los labels
+          ),
+          SizedBox(height: 10.0),
+          TextField(
+            controller: _usernameController,
+            decoration: labelStyle.copyWith(labelText: 'Nombre de usuario'), // Usar el estilo definido para los labels
+          ),
+          SizedBox(height: 10.0),
+          TextField(
+            controller: _passwordController,
+            obscureText: true,
+            decoration: labelStyle.copyWith(labelText: 'Contraseña'), // Usar el estilo definido para los labels
+          ),
+          SizedBox(height: 20.0),
+          ElevatedButton(
+            onPressed: _register,
+            style: buttonStyle, // Usar el estilo definido para el botón
+            child: Text('Registrarse'),
+          ),
+          SizedBox(height: 10.0),
+          TextButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => LoginScreen()),
+              );
+            },
+            style: textButtonStyle, // Usar el estilo definido para el botón de texto
+            child: Text(
+              'Ir a Login',
+              style: buttonTextTextStyle, // Usar el estilo definido para el texto del botón de texto
+            ),
+          )
+        ],
+      ),
+    ),
+  );
+}
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Registro'),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(labelText: 'Correo electrónico'),
-            ),
-            TextField(
-              controller: _usernameController,
-              decoration: InputDecoration(labelText: 'Nombre de usuario'),
-            ),
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: InputDecoration(labelText: 'Contraseña'),
-            ),
-            SizedBox(height: 20.0),
-            ElevatedButton(
-              onPressed: _register,
-              child: Text('Registrarse'),
-            ),
-            SizedBox(height: 10.0),
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginScreen()),
-                );
-              },
-              child: Text(
-                'Ir a Login',
-                style: TextStyle(
-                  fontSize: 16.0,
-                  color: Colors.blue,
-                ),
-              ),
-            )
-          ],
-        ),
-      ),
-    );
-  }
 }
