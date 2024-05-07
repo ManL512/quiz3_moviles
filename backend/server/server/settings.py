@@ -28,16 +28,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-REST_FRAME_SIMPLEJWT = {
-  'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),  # Set short-lived token lifetime
-
-}
-
-
+# Configuración del tiempo de vida de Simple JWT
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
 }
-
 
 # Application definition
 
@@ -50,7 +45,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'server',  # Nombre de tu aplicación
 ]
+
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
