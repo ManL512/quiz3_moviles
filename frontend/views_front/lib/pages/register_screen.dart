@@ -1,49 +1,39 @@
+//register_screen.dart - pagina 3
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'login_screen.dart'; // Importa LoginScreen
-import 'package:views_front/constants/constants.dart';
 
-const Color backgroundColor = Color.fromARGB(255, 153, 176, 207); // Definir el color de fondo
-class RegisterScreen extends StatefulWidget {
-  @override
-  _RegisterScreenState createState() => _RegisterScreenState();
-}
-
-class _RegisterScreenState extends State<RegisterScreen> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+class RegisterScreen extends StatelessWidget {
   final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
-  Future<void> _register() async {
-    final String email = _emailController.text;
-    final String password = _passwordController.text;
+  Future<void> _register(BuildContext context) async {
     final String username = _usernameController.text;
+    final String password = _passwordController.text;
 
     final url = Uri.parse('http://127.0.0.1:8000/register/');
     final response = await http.post(
       url,
       body: {
-        'email': email,
-        'password': password,
         'username': username,
+        'password': password,
       },
     );
 
-    if (response.statusCode == 201 || response.statusCode == 200) {
+    if (response.statusCode == 201) {
+      // Registration successful
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('¡Usuario creado!'),
+          content: const Text('User created successfully!'),
           backgroundColor: Colors.green,
         ),
       );
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
-      );
+      // Navigate to login screen after successful registration
+      Navigator.pushReplacementNamed(context, '/login');
     } else {
+      // Handle registration failure
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Registro fallido: ${response.body}'),
+          content: Text('Registration failed: ${response.body}'),
           backgroundColor: Colors.red,
         ),
       );
@@ -54,48 +44,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Registro'),
+        title: Text('Register'),
       ),
-      body: Container(
-        color: backgroundColor, // Usar el color de fondo definido en constants.dart
-        padding: EdgeInsets.all(16.0),
+      body: Padding(
+        
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            TextField(
-              controller: _emailController,
-              decoration: labelStyle.copyWith(labelText: 'Correo electrónico'), // Usar el estilo definido para los labels
-            ),
-            SizedBox(height: 10.0),
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
             TextField(
               controller: _usernameController,
-              decoration: labelStyle.copyWith(labelText: 'Nombre de usuario'), // Usar el estilo definido para los labels
+              decoration: InputDecoration(labelText: 'Username'),
             ),
-            SizedBox(height: 10.0),
             TextField(
               controller: _passwordController,
               obscureText: true,
-              decoration: labelStyle.copyWith(labelText: 'Contraseña'), // Usar el estilo definido para los labels
+              decoration: InputDecoration(labelText: 'Password'),
             ),
-            SizedBox(height: 20.0),
             ElevatedButton(
-              onPressed: _register,
-              style: ButtonStyles.getButtonStyle(), // Usar el estilo definido en la clase ButtonStyles
-              child: Text('Registrarse'),
+              onPressed: () => _register(context),
+              child: Text('Register'),
             ),
-            SizedBox(height: 10.0),
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginScreen()),
-                );
-              },
-              style: ButtonStyles.getButtonStyle(), // Usar el estilo definido en la clase ButtonStyles
-              child: Text(
-                'Ir a Login',
-              ),
-            )
+            SizedBox(height: 20), 
+TextButton(
+  onPressed: () {
+    Navigator.pushReplacementNamed(context, '/login'); 
+  },
+  child: Text('Go to Login'),
+),
+
           ],
         ),
       ),

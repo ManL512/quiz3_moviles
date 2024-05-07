@@ -1,286 +1,204 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:views_front/pages/login_screen.dart';
-import 'package:views_front/constants/constants.dart';
-const Color backgroundColor = Color.fromARGB(255, 153, 176, 207); // Definir el color de fondo
+
 class HomeScreen extends StatelessWidget {
-  final String accessToken;
-  final bool isFingerprintEnabled;
+  final String? sessionToken; // Cambiado a String nullable
+  final String username;
 
-  const HomeScreen({Key? key, required this.accessToken, this.isFingerprintEnabled = false}) : super(key: key);
+  const HomeScreen({Key? key, required this.sessionToken, required this.username}) : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Home Screen'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Opciones disponibles: ',
-              style: TextStyle(fontSize: 24),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: () {
-                if (isFingerprintEnabled) {
-                  _disableFingerprint(context);
-                } else {
-                  _showActivationDialog(context);
-                }
-              },
-              icon: Icon(isFingerprintEnabled ? Icons.cancel : Icons.fingerprint),
-              label: Text(isFingerprintEnabled ? 'Deshabilitar Login Alternativo' : 'Habilitar Login Alternativo'),
-              style: ButtonStyles.getButtonStyle(), // Aplicar el estilo definido para el botón
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginScreen(isLongTokenActivated: isFingerprintEnabled)),
-                );
-              },
-              child: Text('Cerrar Sesión'),
-              style: ButtonStyles.getButtonStyle(), // Aplicar el estilo definido para el botón
-            ),
-          ],
-        ),
-      ),
-    );
+Future<void> enableFingerprint(String username, String password, String? sessionToken, BuildContext context) async {
+  if (sessionToken == null) {
+    // Manejar el caso en que sessionToken sea null
+    print('El token de sesión es nulo.');
+    return;
   }
+  
+  final url = Uri.parse('http://127.0.0.1:8000/fingerprint-login/');
 
-  void _showActivationDialog(BuildContext context) {
-    TextEditingController usernameController = TextEditingController();
-    TextEditingController passwordController = TextEditingController();
+  final requestBody = {
+    'username': username,
+    'password': password,
+    'session_token': sessionToken,
+  };
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Activar Login Alternativo'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: usernameController,
-                decoration: InputDecoration(labelText: 'Nombre de Usuario'), // No aplicar estilos aquí
-              ),
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                decoration: InputDecoration(labelText: 'Contraseña'), // No aplicar estilos aquí
-              ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                _activateLongToken(context, usernameController.text, passwordController.text);
-              },
-              child: Text('Aceptar'),
-              // No aplicar estilos aquí
-            ),
-          ],
-        );
-      },
-    );
-  }
+  final response = await http.post(
+    url,
+    body: json.encode(requestBody),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  );
 
-
-  Future<void> _activateLongToken(BuildContext context, String username, String password) async {
-    final url = Uri.parse('http://127.0.0.1:8000/activate_long_token/');
-    final response = await http.post(
-      url,
-      body: jsonEncode({
-        'username': username,
-        'password': password,
-      }),
-      headers: {'Content-Type': 'application/json'},
-    );
-
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> data = jsonDecode(response.body);
-      final String longToken = data['long_token'];
-
-      // Mostrar un mensaje de éxito
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Token de larga duración activado correctamente'),
-          backgroundColor: Colors.green,
-        ),
-      );
-
-      // Redirige al usuario a la segunda instancia de la pantalla de inicio
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => SecondHomeScreen(accessToken: accessToken, longToken: longToken)),
-      );
-    } else {
-      // Mostrar un mensaje de error
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al activar el token de larga duración'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
-void _disableFingerprint(BuildContext context) {
-    TextEditingController usernameController = TextEditingController();
-    TextEditingController passwordController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Deshabilitar Huella'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: usernameController,
-                decoration: InputDecoration(labelText: 'Nombre de Usuario'), // No aplicar estilos aquí
-              ),
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                decoration: InputDecoration(labelText: 'Contraseña'), // No aplicar estilos aquí
-              ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                _sendDisableFingerprintRequest(context, usernameController.text, passwordController.text);
-              },
-              child: Text('Aceptar'),
-              // No aplicar estilos aquí
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _sendDisableFingerprintRequest(BuildContext context, String username, String password) async {
-    final url = Uri.parse('http://127.0.0.1:8000/disable_long_token/');
-    final response = await http.post(
-      url,
-      body: jsonEncode({
-        'username': username,
-        'password': password,
-      }),
-      headers: {'Content-Type': 'application/json'},
-    );
-
-    if (response.statusCode == 200) {
-      // Mostrar un mensaje de éxito
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Huella deshabilitada correctamente'),
-          backgroundColor: Colors.green,
-        ),
-      );
-
-      // Redirigir al usuario a la pantalla de inicio de sesión
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginScreen(isLongTokenActivated: false)),
-      );
-    } else {
-      // Mostrar un mensaje de error
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al deshabilitar la huella. Por favor, inténtalo de nuevo.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-}
-
-class SecondHomeScreen extends StatelessWidget {
-  final String accessToken;
-  final String longToken;
-
-  const SecondHomeScreen({Key? key, required this.accessToken, required this.longToken}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Home Screen'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Opciones disponibles:  ',
-              style: TextStyle(fontSize: 24),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: () {
-                // Implementa aquí la lógica para deshabilitar el login alternativo
-                _disableFingerprint(context);
-              },
-              icon: Icon(Icons.cancel),
-              label: Text('Deshabilitar Login Alternativo'),
-              style: ButtonStyles.getButtonStyle(), // Aplicar el estilo definido para el botón
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                // Redirige al usuario a la pantalla de inicio de sesión
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginScreen(isLongTokenActivated: true)),
-                );
-              },
-              child: Text('Cerrar Sesión'),
-              style: ButtonStyles.getButtonStyle(), // Aplicar el estilo definido para el botón
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _disableFingerprint(BuildContext context) {
-    // Aquí iría la lógica para deshabilitar el login alternativo
-    // Por ejemplo, enviar una solicitud al servidor para desactivar el token de larga duración
-
-    // Mostrar un mensaje de éxito
+  if (response.statusCode == 200) {
+    // La huella se habilitó correctamente
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Huella deshabilitada correctamente'),
+        content: Text('Huella habilitada correctamente.'),
         backgroundColor: Colors.green,
       ),
     );
+    // Agregar el mensaje "huella agregada" después de 5 segundos
+    Future.delayed(Duration(seconds: 5), () {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Huella agregada.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    });
+  } else {
+    // Error al habilitar la huella
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Error al habilitar la huella: ${response.statusCode}'),
+        backgroundColor: Colors.red,
+      ),
+    );
+    print('Mensaje del servidor: ${response.body}');
+  }
+}
 
-    // Redirige al usuario a la pantalla de inicio de sesión con ambas opciones
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => LoginScreen(isLongTokenActivated: true)),
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Home'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '¡Bienvenido, $username!',
+              style: TextStyle(fontSize: 24),
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Token de sesión:', // Cambiado de 'Token de acceso'
+              style: TextStyle(fontSize: 18),
+            ),
+            Text(
+              sessionToken ?? 'N/A', // Usar sessionToken si no es null, de lo contrario mostrar 'N/A'
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                String enteredUsername = '';
+                String enteredPassword = '';
+
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text('Verificación de Credenciales'),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TextField(
+                            decoration: InputDecoration(labelText: 'Nombre de Usuario'),
+                            onChanged: (value) {
+                              enteredUsername = value;
+                            },
+                          ),
+                          TextField(
+                            decoration: InputDecoration(labelText: 'Contraseña'),
+                            obscureText: true,
+                            onChanged: (value) {
+                              enteredPassword = value;
+                            },
+                          ),
+                        ],
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text('Cancelar'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            // Acción para enviar las credenciales y el token de sesión al backend y habilitar la huella
+                            enableFingerprint(enteredUsername, enteredPassword, sessionToken, context); // Cambiado de accessToken a sessionToken
+                            Navigator.of(context).pop(); // Cerrar el diálogo modal
+                          },
+                          child: Text('Confirmar'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              child: Padding(
+                padding: EdgeInsets.all(10),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.fingerprint),
+                    SizedBox(width: 10),
+                    Text('Habilitar Huella'),
+                  ],
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Color.fromARGB(255, 0, 0, 0), 
+                backgroundColor: Color.fromARGB(255, 33, 243, 142),
+                side: BorderSide(color: Color(0xFF1679AB), width: 2),
+              ),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Acción para ver artículos
+              },
+              child: Padding(
+                padding: EdgeInsets.all(10),
+                child: Text('Ver Artículos'),
+              ),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Color.fromARGB(255, 0, 0, 0), 
+                backgroundColor: Color.fromARGB(255, 33, 243, 142),
+                side: BorderSide(color: Color(0xFF1679AB), width: 2),
+              ),
+            ),
+            SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                // Acción para ver ofertas
+              },
+              child: Padding(
+                padding: EdgeInsets.all(10),
+                child: Text('Ver Ofertas'),
+              ),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Color.fromARGB(255, 0, 0, 0), 
+                backgroundColor: Color.fromARGB(255, 33, 243, 142),
+                side: BorderSide(color: Color(0xFF1679AB), width: 2),
+              ),
+            ),
+            SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                // Acción para cerrar sesión
+                Navigator.pop(context);
+              },
+              child: Padding(
+                padding: EdgeInsets.all(10),
+                child: Text('Cerrar Sesión'),
+              ),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Color.fromARGB(255, 0, 0, 0), 
+                backgroundColor: Color.fromARGB(255, 33, 243, 142),
+                side: BorderSide(color: Color(0xFF1679AB), width: 2),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

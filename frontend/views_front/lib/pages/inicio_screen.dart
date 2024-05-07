@@ -1,3 +1,4 @@
+//inicio_screen.dart - pagina 2
 import 'package:flutter/material.dart';
 import 'package:views_front/pages/register_screen.dart';
 
@@ -38,3 +39,4 @@ class InicioScreen extends StatelessWidget {
     );
   }
 }
+

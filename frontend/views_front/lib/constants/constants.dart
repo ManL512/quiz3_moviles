@@ -1,4 +1,3 @@
-//'package:views_front/constants/boton.dart'
 import 'package:flutter/material.dart';
 
 class ButtonStyles {
@@ -14,6 +13,25 @@ class ButtonStyles {
     );
   }
 }
+
+// Definir el estilo del botón
+final buttonStyle = ElevatedButton.styleFrom(
+  elevation: 4,
+  shadowColor: Colors.grey.withOpacity(0.5),
+  padding: EdgeInsets.symmetric(vertical: 14.0),
+);
+
+// Definir el estilo del botón de texto
+final textButtonStyle = TextButton.styleFrom(
+  padding: EdgeInsets.zero,
+  minimumSize: Size.zero,
+);
+
+// Definir el estilo del texto del botón de texto
+final buttonTextTextStyle = TextStyle(
+  fontSize: 16.0,
+  color: Colors.blue,
+);
 
 // Definir el color de fondo
 const Color backgroundColor = Color.fromARGB(255, 153, 176, 207);
@@ -42,23 +60,4 @@ final labelStyle = InputDecoration(
     borderRadius: BorderRadius.circular(8.0),
   ),
   errorStyle: TextStyle(color: Colors.red),
-);
-
-// Definir el estilo del botón
-final buttonStyle = ElevatedButton.styleFrom(
-  elevation: 4,
-  shadowColor: Colors.grey.withOpacity(0.5),
-  padding: EdgeInsets.symmetric(vertical: 14.0),
-);
-
-// Definir el estilo del botón de texto
-final textButtonStyle = TextButton.styleFrom(
-  padding: EdgeInsets.zero,
-  minimumSize: Size.zero,
-);
-
-// Definir el estilo del texto del botón de texto
-final buttonTextTextStyle = TextStyle(
-  fontSize: 16.0,
-  color: Colors.blue,
 );
